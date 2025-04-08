@@ -80,8 +80,19 @@
 
       // 댓글 DB 저장
       $("#makeComment").click(async function () {
+        $("#alert").empty();
         let name = $("#name").val();
         let comment = $("#comment").val();
+
+        if (!name || !comment) {
+          let alert_html = `
+            <div class="alert alert-danger" role="alert">
+              다음 입력칸들을 모두 입력해주세요
+            </div>`;
+
+          $("#alert").append(alert_html);
+          return;
+        }
 
         let doc = {
           name: name,
@@ -166,6 +177,7 @@
               댓글작성하기
             </button>
             <div id="commentbox" style="display: none">
+              <div id="alert"></div>
               <div class="mb-3">
                 <label for="commentName" class="name">이름</label>
                 <input
