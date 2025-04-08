@@ -81,8 +81,20 @@
 
         // 댓글 DB 저장
         $("#makeComment").click(async function () {
+            $("#alert").empty();
             let name = $("#name").val();
             let comment = $("#comment").val();
+
+            if (!name || !comment) {
+                let alert_html = `
+            <div class="alert alert-danger" role="alert">
+              다음 입력칸들을 모두 입력해주세요
+            </div>`;
+
+                $("#alert").append(alert_html);
+                return;
+            }
+
 
             let doc = {
                 name: name,
@@ -143,7 +155,8 @@
                                     <li><strong>MBTI:</strong> ISTP</li>
                                     <li>
                                         <strong>블로그 주소:</strong>
-                                        <a href="https://velog.io/@easter1201" target="_blank">https://velog.io/@easter1201</a>
+                                        <a href="https://velog.io/@easter1201"
+                                            target="_blank">https://velog.io/@easter1201</a>
                                     </li>
                                     <li><strong>TMI:</strong> 게임과 음식, 밴드에 환장함</li>
                                 </ul>
@@ -162,6 +175,7 @@
                         댓글작성하기
                     </button>
                     <div id="commentbox" style="display: none">
+                        <div id="alert"></div>
                         <div class="mb-3">
                             <label for="commentName" class="name">이름</label>
                             <input type="text" class="form-control" id="name" placeholder="이름을 입력하세요" />
