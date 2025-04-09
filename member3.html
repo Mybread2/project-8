@@ -72,8 +72,9 @@
         collection,
         addDoc,
         deleteDoc,
-        doc as docRef,
+        doc,
         query,
+        orderBy,
         where,
         updateDoc,
       } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
@@ -100,50 +101,47 @@
         btn.textContent = isVisible ? "닫기" : "댓글작성하기";
       });
 
-      // 열고 닫기 : 비밀번호 입력칸 (수정하기)
-      $("#comment-area").on("click", "#viewpw", function () {
-        const parent = $(this).closest("#comment-edit");
-        const up_pwbox = parent.find("#update-pwbox");
-        const pwbox = parent.find("#pwbox");
+      // 열고 닫기 : 비밀번호 입력칸 (삭제하기)
+      $("#comment-area").on("click", "#delete-btn", function () {
+        const parent = $(this).closest("#edit-buttons");
+        const update_box = parent.find("#update-pw-box");
+        const delete_box = parent.find("#delete-comment-box");
 
-        const isVisible = pwbox.is(":visible");
-        pwbox.toggle();
+        const isVisible = delete_box.is(":visible");
+        delete_box.toggle();
 
         // 수정하기 칸이 열려있으면 닫기
-        if (up_pwbox.is(":visible")) {
-          up_pwbox.toggle();
-          parent.find("#view-up-pw").text("수정하기");
+        if (update_box.is(":visible")) {
+          update_box.toggle();
+          parent.find("#update-btn").text("수정하기");
         }
 
         $(this).text(isVisible ? "삭제하기" : "닫기");
       });
 
       // 열고 닫기 : 비밀번호 입력칸 (수정하기)
-      $("#comment-area").on("click", "#view-up-pw", function () {
-        const parent = $(this).closest("#comment-edit");
-        const up_pwbox = parent.find("#update-pwbox");
-        const pwbox = parent.find("#pwbox");
+      $("#comment-area").on("click", "#update-btn", function () {
+        const parent = $(this).closest("#edit-buttons");
+        const update_box = parent.find("#update-pw-box");
+        const delete_box = parent.find("#delete-comment-box");
 
-        const up_isVisible = up_pwbox.is(":visible");
-        up_pwbox.toggle();
+        const isVisible = update_box.is(":visible");
+        update_box.toggle();
 
         // 삭제하기 칸이 열려있으면 닫기
-        if (pwbox.is(":visible")) {
-          pwbox.toggle();
-          parent.find("#viewpw").text("삭제하기");
+        if (delete_box.is(":visible")) {
+          delete_box.toggle();
+          parent.find("#delete-btn").text("삭제하기");
         }
 
-        $(this).text(up_isVisible ? "수정하기" : "닫기");
+        $(this).text(isVisible ? "수정하기" : "닫기");
       });
 
       // 열고 닫기 : 비밀번호 입력칸 (수정하기)
-      $("#comment-area").on("click", "#close-update", function () {
-        const parent = $(this).closest("#comment-edit");
-        const up_com_box = parent.find("#update-comment-box");
-        const up_pwbox = parent.find("#update-pwbox");
+      $("#comment-area").on("click", "#close-update-btn", function () {
+        const parent = $(this).closest("#update-comment-box");
 
-        const isVisible = up_com_box.is(":visible");
-        up_com_box.toggle();
+        parent.toggle();
       });
 
       // --------- 댓글 DB 조작
@@ -177,7 +175,9 @@
       });
 
       // 댓글 DB 불러오기
-      let docs = await getDocs(collection(db, "comment3"));
+      let docs = await getDocs(
+        query(collection(db, "comment3"), orderBy("createdAt", "desc"))
+      );
       docs.forEach((doc) => {
         let row = doc.data();
 
@@ -187,72 +187,70 @@
         let createdAt = new Date(row["createdAt"]).toLocaleString();
 
         let temp_html = `
-            <div class="border p-3 mb-2">
+            <div class="border p-3 mb-2" id="high">
+              <div id="hide-date" style="display: none">${row["createdAt"]}</div>
               <p class="mb-1" style="display: flex; justify-content: space-between;">
                 <span><strong>이름:</strong> ${name}</span>
                 <span style="color: gray; font-size: small;">${createdAt}</span>
               </p>
-              <div class="mb-1" id="comment-edit">
+              <div class="mb-1" id="edit-buttons">
                 <span><strong>내용:</strong> <span style="white-space: pre-wrap;">${comment}</span></span>
                 <div style="text-align: right;">
-                  <button class="btn btn-outline-secondary" id="view-up-pw"
+                  <button class="btn btn-outline-secondary" id="update-btn"
                     style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
                     수정하기
                   </button>
-                  <button class="btn btn-outline-secondary" id="viewpw"
+                  <button class="btn btn-outline-secondary" id="delete-btn"
                     style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
                     삭제하기
                   </button>
                 </div>
-                <div class="mb-3" id="update-pwbox" style="display: none">
+                <div class="mb-3" id="update-pw-box" style="display: none">
                   <hr/>
-                  <div id="updateAlert"></div>
+                  <div id="update-pw-alert"></div>
                   <p class="mb-1" style="display: flex; justify-content: space-between;">
                     <label for="exampleInputPassword1" class="form-label">Password</label>
-                    <button class="btn btn-primary" id="updateComment"
+                    <button class="btn btn-primary" id="update-pw-btn"
                       style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
                       수정하기
                     </button>
                   </p>
                   <input type="password" class="form-control" id="update-pw" />
-                  <div id="comment-uppw" style="display: none">${password}</div>
                 </div>
 
                 <div id="update-comment-box" style="display: none">
                   <hr/>
-                  <div id="up-cont-alert"></div>
+                  <div id="update-comment-alert"></div>
                   <div class="mb-3">
                     <label for="commentContent" class="content">내용</label>
                     <textarea
                       class="form-control"
-                      id="update-content"
+                      id="update-comment"
                       rows="3"
                       placeholder="내용을 입력하세요"
                     ></textarea>
                   </div>
                   <p class="mb-1" style="display: flex; justify-content: space-between;">
-                    <button class="btn btn-outline-primary mb-4" id="update-button">
+                    <button class="btn btn-outline-primary mb-4" id="update-comment-btn">
                       댓글수정하기
                     </button>
-                    <button class="btn btn-outline-primary mb-4" id="close-update">
+                    <button class="btn btn-outline-primary mb-4" id="close-update-btn">
                       닫기
                     </button>
                   </p>
-                  <div id="comment-uppw2" style="display: none">${password}</div>
                 </div>
 
-                <div class="mb-3" id="pwbox" style="display: none">
+                <div class="mb-3" id="delete-comment-box" style="display: none">
                   <hr/>
-                  <div id="deleteAlert"></div>
+                  <div id="delete-comment-alert"></div>
                   <p class="mb-1" style="display: flex; justify-content: space-between;">
                     <label for="exampleInputPassword1" class="form-label">Password</label>
-                    <button class="btn btn-secondary" id="deleteComment"
+                    <button class="btn btn-secondary" id="delete-comment-btn"
                       style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
                       삭제하기
                     </button>
                   </p>
-                  <input type="password" class="form-control" id="delPW" />
-                  <div id="comment-pw" style="display: none">${password}</div>
+                  <input id="delete-pw" type="password" class="form-control"/>
                 </div>
               </div>
 
@@ -264,101 +262,123 @@
       $("#count").append(count_html);
 
       // 댓글 삭제
-      $("#comment-area").on("click", "#deleteComment", async function () {
-        const parent = $(this).closest("#pwbox");
-        const deleteAlert = parent.find("#deleteAlert");
-        const delPW = parent.find("#delPW").val();
-        const com_pw = parent.find("#comment-pw").text();
+      $("#comment-area").on("click", "#delete-comment-btn", async function () {
+        const parent = $(this).closest("#delete-comment-box");
+        const delete_alert = parent.find("#delete-comment-alert");
+        const delete_pw = parent.find("#delete-pw").val();
+        const created_date = Number(
+          $(this).closest("#high").find("#hide-date").text()
+        );
 
-        deleteAlert.empty();
         // 비밀번호 미입력 방지
-        if (!delPW) {
-          let alert_html = `
+        delete_alert.empty();
+        if (!delete_pw) {
+          let delete_alert_html = `
             <div class="alert alert-warning" role="alert">
               비밀번호를 입력해주세요
             </div>`;
-
-          deleteAlert.append(alert_html);
+          delete_alert.append(delete_alert_html);
           return;
         }
+
         // 비번 맞으면 - 댓글삭제
-        if (delPW === com_pw) {
-          let finddoc = await getDocs(
-            query(collection(db, "comment3"), where("password", "==", delPW))
-          );
-          finddoc.forEach(async (doc) => {
-            await deleteDoc(docRef(db, "comment3", doc.id));
-            alert("삭제 완료!");
-            window.location.reload();
-          });
-        } else {
+        let finddoc = await getDocs(
+          query(
+            collection(db, "comment3"),
+            where("password", "==", delete_pw),
+            where("createdAt", "==", created_date)
+          )
+        );
+        finddoc.forEach(async (find) => {
+          await deleteDoc(doc(db, "comment3", find.id));
+          alert("삭제 완료!");
+          window.location.reload();
+          return;
+        });
+        if (finddoc.empty) {
           // 비번 틀리면 경고
           let alert_html = `
           <div class="alert alert-danger" role="alert">
             비밀번호가 틀립니다.
           </div>`;
-          deleteAlert.append(alert_html);
+          delete_alert.append(alert_html);
         }
       });
 
+      let update_cm_pw = "";
       //댓글 수정 : 수정칸 접근
-      $("#comment-area").on("click", "#updateComment", async function () {
-        const parent = $(this).closest("#update-pwbox");
-        const updateAlert = parent.find("#updateAlert");
-        const updatePW = parent.find("#update-pw").val();
-        const com_pw = parent.find("#comment-uppw").text();
+      $("#comment-area").on("click", "#update-pw-btn", async function () {
+        const parent = $(this).closest("#update-pw-box");
+        const update_alert = parent.find("#update-pw-alert");
+        update_cm_pw = parent.find("#update-pw").val();
+        const created_date = Number(
+          $(this).closest("#high").find("#hide-date").text()
+        );
 
-        const parent2 = $(this).closest("#comment-edit");
-        parent2.find("#view-up-pw").text("수정하기");
-
-        updateAlert.empty();
         // 비밀번호 미입력 방지
-        if (!updatePW) {
+        update_alert.empty();
+        if (!update_cm_pw) {
           let alert_html = `
             <div class="alert alert-warning" role="alert">
               비밀번호를 입력해주세요
             </div>`;
-          updateAlert.append(alert_html);
+          update_alert.append(alert_html);
           return;
         }
+
         // 비번 맞으면 - 수정하기 칸 생성
-        if (updatePW === com_pw) {
-          parent.hide();
-          $("#update-comment-box").show();
-        } else {
-          // 비번 틀리면 경고
+        let finddoc = await getDocs(
+          query(
+            collection(db, "comment3"),
+            where("password", "==", update_cm_pw),
+            where("createdAt", "==", created_date)
+          )
+        );
+        // 비번 틀리면 경고
+        if (finddoc.empty) {
           let alert_html = `
           <div class="alert alert-danger" role="alert">
             비밀번호가 틀립니다.
           </div>`;
-          updateAlert.append(alert_html);
+          update_alert.append(alert_html);
           return;
+        } else {
+          $("#update-comment-box").show();
+          $("#update-pw").val("");
+          parent.hide();
+          $(this).closest("#edit-buttons").find("#update-btn").text("수정하기");
         }
       });
 
       // 수정 완료 버튼 클릭 시
-      $("#comment-area").on("click", "#update-button", async function () {
+      $("#comment-area").on("click", "#update-comment-btn", async function () {
         const parent = $(this).closest("#update-comment-box");
-        const updateAlert = parent.find("#up-cont-alert");
-        const updatedText = parent.find("#update-content").val();
-        const com_pw = parent.find("#comment-uppw2").text();
+        const update_comment_alert = parent.find("#update-comment-alert");
+        const update_comment = parent.find("#update-comment").val();
+        const created_date = Number(
+          $(this).closest("#high").find("#hide-date").text()
+        );
 
         // 내용 미입력 방지
-        if (!updatedText) {
+        if (!update_comment) {
           let alert_html = `
             <div class="alert alert-warning" role="alert">
               내용을 입력해주세요
             </div>`;
-          updateAlert.append(alert_html);
+          update_comment_alert.append(alert_html);
           return;
         }
 
         let finddoc = await getDocs(
-          query(collection(db, "comment3"), where("password", "==", com_pw))
+          query(
+            collection(db, "comment3"),
+            where("password", "==", update_cm_pw),
+            where("createdAt", "==", created_date)
+          )
         );
-        finddoc.forEach(async (doc) => {
-          await updateDoc(docRef(db, "comment3", doc.id), {
-            comment: updatedText,
+        finddoc.forEach(async (find) => {
+          await updateDoc(doc(db, "comment3", find.id), {
+            comment: update_comment,
             createdAt: Date.now(),
           });
           alert("수정 완료!");
