@@ -15,16 +15,26 @@
         /*메인과 글꼴 통일*/
         .header_section {
             background-color: #0f172a;
-            padding: 1rem;
+            padding: 2rem;
             text-align: center;
         }
-
         .header_name {
-            font-size: 60px;
-            font-weight: bold;
-            color: white;
-            text-decoration: none;
-        }
+        font-size: 100px;
+        font-weight: bold;
+        color: #0f172a;
+        text-decoration: none;
+        float : left;
+        margin-left: 100px;
+        margin-top: 10px;
+      }
+      /* 홈페이지로 돌아가는 버튼 */
+      .header_home {
+        font-size: 20px;
+        font-weight: bold;
+        color: white;
+        text-decoration: none;
+        float:right;
+      }
 
         /*헤더 배경, 글꼴 지정*/
         .comment-top {
@@ -134,7 +144,8 @@
 
 <body class="bg-light">
     <header class="header_section">
-        <a href="mainscreen.html" class="header_name">V8 팀으로 돌아가기</a>
+        <a href="mainscreen.html" class="header_home">V8 홈</a>
+        <a href="mainscreen.html" class="header_name">&laquo;</a>
     </header>
 
     <main class="container my-5">
