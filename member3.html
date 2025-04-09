@@ -16,17 +16,33 @@
       /*메인과 글꼴 통일*/
       .header_section {
         background-color: #0f172a;
-        padding: 1rem;
+        padding: 0.4rem;
         text-align: center;
       }
-
       .header_name {
-        font-size: 60px;
+        font-size: 30px;
         font-weight: bold;
         color: white;
         text-decoration: none;
+        text-align: center;
+        margin-left: 20px;
       }
       /*헤더 배경, 글꼴 지정*/
+      .nav li {
+        padding-right: 20px;
+      }
+      .nav-link {
+        padding-left: 8px;
+        padding-right: 8px;
+        text-decoration: none;
+        color: white;
+      }
+      .person-name {
+        font-size: 20px;
+        color: gray;
+        margin-top: 10px;
+      }
+      /*Nav 간격, 글자 크기 지정*/
       .comment-top {
         display: flex;
         justify-content: space-between;
@@ -55,6 +71,10 @@
       import {
         collection,
         addDoc,
+        deleteDoc,
+        doc as docRef,
+        query,
+        where,
       } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
       import { getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
@@ -70,7 +90,7 @@
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
 
-      // 열고 닫기
+      // 열고 닫기 : 댓글 입력칸
       $("#openclose").click(async function () {
         $("#commentbox").toggle();
         const btn = document.getElementById("openclose");
@@ -78,15 +98,27 @@
         btn.textContent = isVisible ? "닫기" : "댓글작성하기";
       });
 
+      // 열고 닫기 : 비밀번호 입력칸
+      $("#comment-area").on("click", "#viewpw", function () {
+        const parent = $(this).closest("#comment-edit");
+        const pwbox = parent.find("#pwbox");
+
+        pwbox.toggle();
+
+        const isVisible = pwbox.is(":visible");
+        $(this).text(isVisible ? "닫기" : "삭제하기");
+      });
+
       // 댓글 DB 저장
       $("#makeComment").click(async function () {
         $("#alert").empty();
         let name = $("#name").val();
         let comment = $("#comment").val();
+        let password = $("#password").val();
 
-        if (!name || !comment) {
+        if (!name || !comment || !password) {
           let alert_html = `
-            <div class="alert alert-danger" role="alert">
+            <div class="alert alert-warning" role="alert">
               다음 입력칸들을 모두 입력해주세요
             </div>`;
 
@@ -98,6 +130,7 @@
           name: name,
           comment: comment,
           createdAt: Date.now(),
+          password: password,
         };
         // 개인별 댓글 DB
         await addDoc(collection(db, "comment3"), doc);
@@ -112,6 +145,7 @@
 
         let name = row["name"];
         let comment = row["comment"];
+        let password = row["password"];
         let createdAt = new Date(row["createdAt"]).toLocaleString();
 
         let temp_html = `
@@ -120,19 +154,94 @@
                 <span><strong>이름:</strong> ${name}</span>
                 <span style="color: gray; font-size: small;">${createdAt}</span>
               </p>
-              <p class="mb-0"><strong>내용:</strong> ${comment}</p>
-            </div>`;
+              <div class="mb-1" id="comment-edit">
+                <span><strong>내용:</strong> <span style="white-space: pre-wrap;">${comment}</span></span>
+                <div style="text-align: right;">
+                  <button class="btn btn-outline-secondary" id="remakeComment"
+                    style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                    수정하기
+                  </button>
+                  <button class="btn btn-outline-secondary" id="viewpw"
+                    style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                    삭제하기
+                  </button>
+                </div>
+                <div class="mb-3" id="pwbox" style="display: none">
+                  <hr/>
+                  <div id="deleteAlert"></div>
+                  <p class="mb-1" style="display: flex; justify-content: space-between;">
+                    <label for="exampleInputPassword1" class="form-label">Password</label>
+                    <button class="btn btn-secondary" id="deleteComment"
+                      style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                      삭제하기
+                    </button>
+                  </p>
+                  <input type="password" class="form-control" id="delPW" />
+                  <div id="comment-pw" style="display: none">${password}</div>
+                </div>
+              </div>
 
+            </div>
+            `;
         $("#comment-area").append(temp_html);
       });
       let count_html = `<div>${docs.size}개의 댓글</div>`;
       $("#count").append(count_html);
+
+      // 댓글 삭제
+      $("#comment-area").on("click", "#deleteComment", async function () {
+        const parent = $(this).closest("#pwbox");
+        const deleteAlert = parent.find("#deleteAlert");
+        const delPW = parent.find("#delPW").val();
+        const com_pw = parent.find("#comment-pw").text();
+
+        deleteAlert.empty();
+
+        if (!delPW) {
+          let alert_html = `
+            <div class="alert alert-warning" role="alert">
+              비밀번호를 입력해주세요
+            </div>`;
+
+          deleteAlert.append(alert_html);
+          return;
+        }
+        //db 삭제
+        if (delPW === com_pw) {
+          let finddoc = await getDocs(
+            query(collection(db, "comment3"), where("password", "==", delPW))
+          );
+          finddoc.forEach(async (doc) => {
+            // 삭제 가능
+            await deleteDoc(docRef(db, "comment3", doc.id));
+            alert("삭제 완료!");
+            window.location.reload();
+            return;
+          });
+        } else {
+          let alert_html = `
+          <div class="alert alert-danger" role="alert">
+            비밀번호가 틀립니다.
+          </div>`;
+          deleteAlert.append(alert_html);
+          return;
+        }
+      });
     </script>
   </head>
 
   <body class="bg-light">
     <header class="header_section">
-      <a href="mainscreen.html" class="header_name">V8 팀으로 돌아가기</a>
+      <ul
+        class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-left mb-md-0"
+      >
+        <li><a href="#" class="nav-link header_name">V8</a></li>
+        <li><a href="mainscreen.html" class="nav-link person-name">홈</a></li>
+        <li><a href="member1.html" class="nav-link person-name">차준호</a></li>
+        <li><a href="member2.html" class="nav-link person-name">이진희</a></li>
+        <li><a href="member4.html" class="nav-link person-name">김도연</a></li>
+        <li><a href="member5.html" class="nav-link person-name">곽호민</a></li>
+      </ul>
     </header>
 
     <main class="container my-5">
@@ -151,7 +260,9 @@
                 <div class="card-body">
                   <h4 class="card-title fw-bold">류수연</h4>
                   <span class="badge text-bg-success">팀원</span>
-                  <p class="card-text">같이 공유하면서 잘해내고싶습니다!</p>
+                  <p class="card-text">
+                    다들 화이팅해서 좋은 결과 얻어갔으면 좋겠습니다!
+                  </p>
                   <ul class="list-unstyled">
                     <li><strong>생일:</strong> 2001.05.19</li>
                     <li><strong>MBTI:</strong> ISTJ</li>
@@ -161,6 +272,7 @@
                         >https://velog.io/@rsy7567</a
                       >
                     </li>
+                    <li><strong>TMI:</strong> 상시 컴퓨터 키는 중...💻</li>
                   </ul>
                 </div>
               </div>
@@ -195,6 +307,12 @@
                   rows="3"
                   placeholder="내용을 입력하세요"
                 ></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="exampleInputPassword1" class="form-label"
+                  >Password</label
+                >
+                <input type="password" class="form-control" id="password" />
               </div>
               <button class="btn btn-outline-primary mb-4" id="makeComment">
                 댓글작성
