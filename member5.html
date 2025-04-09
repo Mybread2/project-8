@@ -136,6 +136,16 @@
         $(this).text(up_isVisible ? "수정하기" : "닫기");
       });
 
+      // 열고 닫기 : 비밀번호 입력칸 (수정하기)
+      $("#comment-area").on("click", "#close-update", function () {
+        const parent = $(this).closest("#comment-edit");
+        const up_com_box = parent.find("#update-comment-box");
+        const up_pwbox = parent.find("#update-pwbox");
+
+        const isVisible = up_com_box.is(":visible");
+        up_com_box.toggle();
+      });
+
       // --------- 댓글 DB 조작
       // 댓글 DB 저장
       $("#makeComment").click(async function () {
@@ -220,9 +230,14 @@
                       placeholder="내용을 입력하세요"
                     ></textarea>
                   </div>
-                  <button class="btn btn-outline-primary mb-4" id="update-button">
-                    댓글수정하기
-                  </button>
+                  <p class="mb-1" style="display: flex; justify-content: space-between;">
+                    <button class="btn btn-outline-primary mb-4" id="update-button">
+                      댓글수정하기
+                    </button>
+                    <button class="btn btn-outline-primary mb-4" id="close-update">
+                      닫기
+                    </button>
+                  </p>
                   <div id="comment-uppw2" style="display: none">${password}</div>
                 </div>
 
@@ -292,6 +307,9 @@
         const updateAlert = parent.find("#updateAlert");
         const updatePW = parent.find("#update-pw").val();
         const com_pw = parent.find("#comment-uppw").text();
+
+        const parent2 = $(this).closest("#comment-edit");
+        parent2.find("#view-up-pw").text("수정하기");
 
         updateAlert.empty();
         // 비밀번호 미입력 방지
