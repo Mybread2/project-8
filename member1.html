@@ -21,28 +21,28 @@
       }
       .header_name {
         font-size: 30px;
-            font-weight: bold;
-            color: white;
-            text-decoration: none;
-            text-align: center;
-            margin-left: 20px;
+        font-weight: bold;
+        color: white;
+        text-decoration: none;
+        text-align: center;
+        margin-left: 20px;
       }
       /*헤더 배경, 글꼴 지정*/
-      .nav li{
-            padding-right: 20px;
-        }
-        .nav-link{
-            padding-left: 8px;
-            padding-right: 8px;
-            text-decoration: none;
-            color: white;
-        }
-        .person-name{
-            font-size: 20px;
-            color: gray;
-            margin-top: 10px;
-        }
-        /*Nav 간격, 글자 크기 지정*/
+      .nav li {
+        padding-right: 20px;
+      }
+      .nav-link {
+        padding-left: 8px;
+        padding-right: 8px;
+        text-decoration: none;
+        color: white;
+      }
+      .person-name {
+        font-size: 20px;
+        color: gray;
+        margin-top: 10px;
+      }
+      /*Nav 간격, 글자 크기 지정*/
       .comment-top {
         display: flex;
         justify-content: space-between;
@@ -63,23 +63,23 @@
         border-radius: 4px;
       }
 
-      .dog_image1{
-            width: 150px;
-            height: 250px;
-            margin-top: 10px;
-            margin-bottom: 10px;
-        }
+      .dog_image1 {
+        width: 150px;
+        height: 250px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
 
-        .dog_image2{
-            width: 200px;
-            height: 250px;
-            margin-top: 10px;
-            margin-bottom: 10px;
-        }
+      .dog_image2 {
+        width: 200px;
+        height: 250px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
 
-        .my_dogs{
-            text-align: center  
-        }
+      .my_dogs {
+        text-align: center;
+      }
       /*img파일 크기 카드에 맞춤*/
     </style>
     <script type="module">
@@ -89,6 +89,10 @@
       import {
         collection,
         addDoc,
+        deleteDoc,
+        doc as docRef,
+        query,
+        where,
       } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
       import { getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
@@ -104,7 +108,7 @@
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
 
-      // 열고 닫기
+      // 열고 닫기 : 댓글 입력칸
       $("#openclose").click(async function () {
         $("#commentbox").toggle();
         const btn = document.getElementById("openclose");
@@ -112,15 +116,27 @@
         btn.textContent = isVisible ? "닫기" : "댓글작성하기";
       });
 
+      // 열고 닫기 : 비밀번호 입력칸
+      $("#comment-area").on("click", "#viewpw", function () {
+        const parent = $(this).closest("#comment-edit");
+        const pwbox = parent.find("#pwbox");
+
+        pwbox.toggle();
+
+        const isVisible = pwbox.is(":visible");
+        $(this).text(isVisible ? "닫기" : "삭제하기");
+      });
+
       // 댓글 DB 저장
       $("#makeComment").click(async function () {
         $("#alert").empty();
         let name = $("#name").val();
         let comment = $("#comment").val();
+        let password = $("#password").val();
 
-        if (!name || !comment) {
+        if (!name || !comment || !password) {
           let alert_html = `
-            <div class="alert alert-danger" role="alert">
+            <div class="alert alert-warning" role="alert">
               다음 입력칸들을 모두 입력해주세요
             </div>`;
 
@@ -132,6 +148,7 @@
           name: name,
           comment: comment,
           createdAt: Date.now(),
+          password: password,
         };
         // 개인별 댓글 DB
         await addDoc(collection(db, "comment"), doc);
@@ -140,13 +157,13 @@
       });
 
       // 댓글 DB 불러오기
-      // 개인별 댓글 DB
       let docs = await getDocs(collection(db, "comment"));
       docs.forEach((doc) => {
         let row = doc.data();
 
         let name = row["name"];
         let comment = row["comment"];
+        let password = row["password"];
         let createdAt = new Date(row["createdAt"]).toLocaleString();
 
         let temp_html = `
@@ -155,19 +172,87 @@
                 <span><strong>이름:</strong> ${name}</span>
                 <span style="color: gray; font-size: small;">${createdAt}</span>
               </p>
-              <p class="mb-0"><strong>내용:</strong> ${comment}</p>
-            </div>`;
+              <div class="mb-1" id="comment-edit">
+                <span><strong>내용:</strong> <span style="white-space: pre-wrap;">${comment}</span></span>
+                <div style="text-align: right;">
+                  <button class="btn btn-outline-secondary" id="remakeComment"
+                    style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                    수정하기
+                  </button>
+                  <button class="btn btn-outline-secondary" id="viewpw"
+                    style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                    삭제하기
+                  </button>
+                </div>
+                <div class="mb-3" id="pwbox" style="display: none">
+                  <hr/>
+                  <div id="deleteAlert"></div>
+                  <p class="mb-1" style="display: flex; justify-content: space-between;">
+                    <label for="exampleInputPassword1" class="form-label">Password</label>
+                    <button class="btn btn-secondary" id="deleteComment"
+                      style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;">
+                      삭제하기
+                    </button>
+                  </p>
+                  <input type="password" class="form-control" id="delPW" />
+                  <div id="comment-pw" style="display: none">${password}</div>
+                </div>
+              </div>
 
+            </div>
+            `;
         $("#comment-area").append(temp_html);
       });
       let count_html = `<div>${docs.size}개의 댓글</div>`;
       $("#count").append(count_html);
+
+      // 댓글 삭제
+      $("#comment-area").on("click", "#deleteComment", async function () {
+        const parent = $(this).closest("#pwbox");
+        const deleteAlert = parent.find("#deleteAlert");
+        const delPW = parent.find("#delPW").val();
+        const com_pw = parent.find("#comment-pw").text();
+
+        deleteAlert.empty();
+
+        if (!delPW) {
+          let alert_html = `
+            <div class="alert alert-warning" role="alert">
+              비밀번호를 입력해주세요
+            </div>`;
+
+          deleteAlert.append(alert_html);
+          return;
+        }
+        //db 삭제
+        if (delPW === com_pw) {
+          let finddoc = await getDocs(
+            query(collection(db, "comment"), where("password", "==", delPW))
+          );
+          finddoc.forEach(async (doc) => {
+            // 삭제 가능
+            await deleteDoc(docRef(db, "comment", doc.id));
+            alert("삭제 완료!");
+            window.location.reload();
+            return;
+          });
+        } else {
+          let alert_html = `
+          <div class="alert alert-danger" role="alert">
+            비밀번호가 틀립니다.
+          </div>`;
+          deleteAlert.append(alert_html);
+          return;
+        }
+      });
     </script>
   </head>
 
   <body class="bg-light">
     <header class="header_section">
-      <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-left mb-md-0">
+      <ul
+        class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-left mb-md-0"
+      >
         <li><a href="#" class="nav-link header_name">V8</a></li>
         <li><a href="mainscreen.html" class="nav-link person-name">홈</a></li>
         <li><a href="member2.html" class="nav-link person-name">이진희</a></li>
@@ -193,16 +278,32 @@
                 <div class="card-body">
                   <h4 class="card-title fw-bold">차준호</h4>
                   <span class="badge text-bg-primary">팀장</span>
-                  <p class="card-text">짧다면 짧고 길다면 긴 4개월이라는 시간동안 즐겁게 지내면서 많이 얻어갑시다. 다들 화이팅!</p>
+                  <p class="card-text">
+                    짧다면 짧고 길다면 긴 4개월이라는 시간동안 즐겁게 지내면서
+                    많이 얻어갑시다. 다들 화이팅!
+                  </p>
                   <ul class="list-unstyled">
-                      <li><strong>생일:</strong> 2001.12.17</li>
-                      <li><strong>MBTI:</strong> INTJ</li>
-                      <li><strong>블로그 주소:</strong> <a href="https://juno0112.tistory.com/" target="_blank">https://juno0112.tistory.com/</a></li>
-                      <li><strong>TMI:</strong> 우리집 유일 여동생</li>
-                      <div class = "my_dogs">
-                      <img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FcadFj1%2FbtsNbMakH83%2FBgz8BQBgE087RtoYRKDJmK%2Fimg.jpg" class="dog_image1" alt="차준호 사진">
-                      <img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FqrQmL%2FbtsNcJX1V8q%2FFlmXKEdoNB0kyhWsjxKaWK%2Fimg.jpg" class="dog_image2" alt="차준호 사진">
-                   </div>
+                    <li><strong>생일:</strong> 2001.12.17</li>
+                    <li><strong>MBTI:</strong> INTJ</li>
+                    <li>
+                      <strong>블로그 주소:</strong>
+                      <a href="https://juno0112.tistory.com/" target="_blank"
+                        >https://juno0112.tistory.com/</a
+                      >
+                    </li>
+                    <li><strong>TMI:</strong> 우리집 유일 여동생</li>
+                    <div class="my_dogs">
+                      <img
+                        src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FcadFj1%2FbtsNbMakH83%2FBgz8BQBgE087RtoYRKDJmK%2Fimg.jpg"
+                        class="dog_image1"
+                        alt="차준호 사진"
+                      />
+                      <img
+                        src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FqrQmL%2FbtsNcJX1V8q%2FFlmXKEdoNB0kyhWsjxKaWK%2Fimg.jpg"
+                        class="dog_image2"
+                        alt="차준호 사진"
+                      />
+                    </div>
                   </ul>
                 </div>
               </div>
@@ -237,6 +338,12 @@
                   rows="3"
                   placeholder="내용을 입력하세요"
                 ></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="exampleInputPassword1" class="form-label"
+                  >Password</label
+                >
+                <input type="password" class="form-control" id="password" />
               </div>
               <button class="btn btn-outline-primary mb-4" id="makeComment">
                 댓글작성
