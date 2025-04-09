@@ -16,16 +16,29 @@
       /*메인과 글꼴 통일*/
       .header_section {
         background-color: #0f172a;
-        padding: 1rem;
+        padding: 2rem;
         text-align: center;
       }
 
       .header_name {
-        font-size: 60px;
+        font-size: 100px;
+        font-weight: bold;
+        color: #0f172a;
+        text-decoration: none;
+        float: left;
+        margin-left: 100px;
+        margin-top: 10px;
+      }
+
+      /* 홈페이지로 돌아가는 버튼 */
+      .header_home {
+        font-size: 20px;
         font-weight: bold;
         color: white;
         text-decoration: none;
+        float: right;
       }
+
       /*헤더 배경, 글꼴 지정*/
       .comment-top {
         display: flex;
@@ -132,7 +145,8 @@
 
   <body class="bg-light">
     <header class="header_section">
-      <a href="mainscreen.html" class="header_name">V8 팀으로 돌아가기</a>
+      <a href="mainscreen.html" class="header_home">V8 홈</a>
+      <a href="mainscreen.html" class="header_name">&laquo;</a>
     </header>
 
     <main class="container my-5">
@@ -151,7 +165,9 @@
                 <div class="card-body">
                   <h4 class="card-title fw-bold">류수연</h4>
                   <span class="badge text-bg-success">팀원</span>
-                  <p class="card-text">같이 공유하면서 잘해내고싶습니다!</p>
+                  <p class="card-text">
+                    다들 화이팅해서 좋은 결과 얻어갔으면 좋겠습니다!
+                  </p>
                   <ul class="list-unstyled">
                     <li><strong>생일:</strong> 2001.05.19</li>
                     <li><strong>MBTI:</strong> ISTJ</li>
@@ -161,6 +177,7 @@
                         >https://velog.io/@rsy7567</a
                       >
                     </li>
+                    <li><strong>TMI:</strong> 상시 컴퓨터 키는 중...💻</li>
                   </ul>
                 </div>
               </div>
