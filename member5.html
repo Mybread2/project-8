@@ -16,28 +16,33 @@
       /*메인과 글꼴 통일*/
       .header_section {
         background-color: #0f172a;
-        padding: 2rem;
+        padding: 0.4rem;
         text-align: center;
       }
-
       .header_name {
-        font-size: 100px;
-        font-weight: bold;
-        color: #0f172a;
-        text-decoration: none;
-        float : left;
-        margin-left: 100px;
-        margin-top: 10px;
-      }
-      /* 홈페이지로 돌아가는 버튼 */
-      .header_home {
-        font-size: 20px;
-        font-weight: bold;
-        color: white;
-        text-decoration: none;
-        float:right;
+        font-size: 30px;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            margin-left: 20px;
       }
       /*헤더 배경, 글꼴 지정*/
+      .nav li{
+            padding-right: 20px;
+        }
+        .nav-link{
+            padding-left: 8px;
+            padding-right: 8px;
+            text-decoration: none;
+            color: white;
+        }
+        .person-name{
+            font-size: 20px;
+            color: gray;
+            margin-top: 10px;
+        }
+        /*Nav 간격, 글자 크기 지정*/
       .comment-top {
         display: flex;
         justify-content: space-between;
@@ -143,8 +148,14 @@
 
   <body class="bg-light">
     <header class="header_section">
-      <a href="mainscreen.html" class="header_home">V8 홈</a>
-      <a href="mainscreen.html" class="header_name">&laquo;</a>
+      <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-left mb-md-0">
+        <li><a href="#" class="nav-link header_name">V8</a></li>
+        <li><a href="mainscreen.html" class="nav-link person-name">홈</a></li>
+        <li><a href="member1.html" class="nav-link person-name">차준호</a></li>
+        <li><a href="member2.html" class="nav-link person-name">이진희</a></li>
+        <li><a href="member3.html" class="nav-link person-name">류수연</a></li>
+        <li><a href="member4.html" class="nav-link person-name">김도연</a></li>
+      </ul>
     </header>
 
     <main class="container my-5">
